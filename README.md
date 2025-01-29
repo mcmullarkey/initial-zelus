@@ -61,3 +61,11 @@ Pull the most recent model that’s inside fault tolerance from S3 using a Docke
 
 #### Step 5 Reasoning
 This process uses the resource constraints as provided and updates the feature store database. We're using the most recent fault tolerant version of our model via vetiver, and we keep the feature store straight by using metadata to make clear which "point in time" we're talking about, We also want to make sure we provision enough resources here, since while technically an AWS Lambda can have 1 core and 4GB of memory its timeout is 15 minutes max. Since we have up to an hour of compute time we’ll want to make sure that’s part of how we provision as well.
+
+## Question 2
+
+From 1 to 5 I'm a 1 on cricket knowledge. My only knowledge comes from the 
+[Wikipedia page](https://en.wikipedia.org/wiki/One_Day_International) in the problem statement, 
+[this Youtube explainer](https://www.youtube.com/watch?v=EWpbtLIxYBk) I remembered going around a while back, 
+and posts on Bluesky when the USA upset Pakistan last year.
+
