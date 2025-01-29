@@ -1,6 +1,6 @@
 # Michael Mullarkey's Responses to Zelus Analytics Take Home
 
-1. 
+My answer to Question #1
 
 My proposed architecture:
 Since the predictions need to be delivered overnight, not in real time, we're 
