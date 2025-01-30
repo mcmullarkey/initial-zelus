@@ -41,39 +41,9 @@ main <- function() {
 
   output_intermediate <- transform_match_innings(match_innings)
 
-  output_intermediate |>
-    distinct(remaining_wickets) |>
-    print()
+  run_deliveries_validation(output_intermediate)
 
-  output_intermediate |>
-    filter(remaining_wickets <= 0) |>
-    arrange(matchid, innings, over, delivery) |>
-    glimpse()
-
-  output_intermediate |>
-    count(wicket.kind) |>
-    print()
-
-  output_intermediate |>
-    count(matchid, innings) |>
-    print()
-
-  output_intermediate |>
-    group_by(matchid, innings, over, delivery) |>
-    summarize(n = n(), .groups = "drop") |>
-    filter(n > 1) |>
-    print()
-
-  output_intermediate |>
-    select(over) |>
-    distinct() |>
-    print(n = 50)
-
-  output_intermediate |>
-    filter(matchid == "1000887", innings == 1, over == 42, delivery == 6) |>
-    glimpse()
-
-  # write_intermediate_output(output_intermediate)
+  write_intermediate_output(output_intermediate)
 
   plot_overall_avg(output_intermediate)
 
@@ -199,13 +169,24 @@ plot_overall_avg <- function(df) {
     labs(x = "Over", y = "Average Runs", title = "Average Runs Scored Per Over")
 }
 
-plot_team_avg <- function(df) {
+run_deliveries_validation <- function(df) {
   df |>
-    group_by(over, team) |>
-    summarize(avg_runs = mean(runs.total, na.rm = TRUE)) |>
-    ggplot(aes(team, avg_runs, color = team)) +
-    geom_col(alpha = 0.7) +
-    theme_minimal()
+    distinct(remaining_wickets) |>
+    print()
+
+  df |>
+    select(over) |>
+    distinct() |>
+    print(n = 50)
+
+  df |>
+    group_by(matchid, innings, over, delivery) |>
+    summarize(n = n(), .groups = "drop") |>
+    filter(n > 1) |>
+    print()
+}
+
+transform_for_modeling <- function(df) {
 }
 
 main()
