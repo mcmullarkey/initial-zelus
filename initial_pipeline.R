@@ -60,14 +60,6 @@ convert_matches_innings <- function() {
 get_complete_mens <- function() {
   files <- c("match_results.json", "innings_results.json")
 
-  # Read in the JSON files and glimpse the data
-  # files |>
-  #   map(~fromJSON(.)) |>
-  #   walk(~glimpse(.))
-
-  # We only have one team from this df if we do distinct matchid
-  # Well need to see if that messes up the join with the ball-by-ball data
-
   men_valid_results <- df_from_parquet("match_results.parquet") |>
     mutate(across(where(is.factor), as.character)) |>
     mutate(
@@ -103,55 +95,7 @@ get_complete_mens <- function() {
     select(team, innings, over, runs.total, wicket.kind) |>
     glimpse()
 
-  # mutate(
-  #   has_result = case_when(
-  #     (result != "no result") | is.na(result) | outcome.result == "tie" ~
-  #       TRUE,
-  #     TRUE ~ FALSE
-  #   )
-  # ) |>
-  # filter(
-  #   gender == "male",
-  #   has_result
-  # ) |>
-  # distinct(matchid, .keep_all = TRUE) |>
-  # glimpse()
-
-  # match_results |>
-  #   filter(result != "tie" | outcome.result != "tie" | is.na(outcome.result)) |>
-  #   count(outcome.winner) |>
-  #   mutate(total = cumsum(n)) |>
-  #   print()
-
-  # match_results |>
-  #   filter(is.na(outcome.winner), is.na(outcome.result)) |>
-  #   print()
-  #
-  # match_results |>
-  #   count(result) |>
-  #   print()
-
   skim(full_df)
-
-  # match_results |>
-  #   filter(is.na(outcome.winner)) |>
-  #   count(result, outcome.method, sort = TRUE) |>
-  #   print()
-  #
-  # match_results |>
-  #   filter(is.na(outcome.winner), is.na(result)) |>
-  #   print()
-  #
-  # match_results |>
-  #   filter(is.na(outcome.winner)) |>
-  #   print()
-  #
-  # ball_by_ball <- fromJSON("innings_results.json")
-  #
-  # full_df <- match_results |>
-  #   left_join(ball_by_ball, by = "matchid")
-  #
-  # skim(full_df)
 
   # Also need to double-check for "no result" matches in ball-by-ball data
   # Need to look for non-completed innings, but only when the team batting
