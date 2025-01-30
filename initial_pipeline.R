@@ -8,6 +8,7 @@ library(dplyr)
 library(duckplyr)
 library(stringr)
 library(skimr)
+library(tidyr)
 
 main <- function() {
   # Download the data from Google Drive
@@ -30,16 +31,16 @@ main <- function() {
 
   innings_complete_mens <- get_innings("innings_results.parquet", complete_mens)
 
-  output_intermediate <- join_match_innings(
+  match_innings <- join_match_innings(
     complete_mens,
     innings_complete_mens
   )
 
-  skim(output_intermediate)
+  # skim(match_innings)
 
-  output_intermediate |>
-    distinct(over) |>
-    glimpse()
+  output_intermediate <- transform_match_innings(match_innings)
+
+  write_intermediate_output(output_intermediate)
 }
 
 download_gdrive <- function(file_id, file_name) {
@@ -112,8 +113,25 @@ get_innings <- function(parquet_path, match_df) {
 join_match_innings <- function(df_match, df_innings) {
   full_df <- df_match |>
     left_join(df_innings, by = "matchid") |>
-    select(matchid, team, innings, over, runs.total, wicket.kind) |>
+    select(matchid, team, innings, over, overs, runs.total, wicket.kind)
+}
+
+transform_match_innings <- function(df_full) {
+  df_full |>
+    separate(over, into = c("over", "delivery"), sep = "\\.", convert = TRUE) |>
+    mutate(
+      remaining_overs = overs - over,
+      remaining_wickets = 10 - cumsum(!is.na(wicket.kind))
+    ) |>
     glimpse()
+}
+
+write_intermediate_output <- function(intermediate_df) {
+  # Writing the df to JSON
+  write_json(intermediate_df, "intermediate_output.json", pretty = TRUE)
+
+  # Also parquet file for vroom vroom
+  df_to_parquet(data = intermediate_df, "intermediate_output.parquet")
 }
 
 main()
