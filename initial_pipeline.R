@@ -9,6 +9,7 @@ library(duckplyr)
 library(stringr)
 library(skimr)
 library(tidyr)
+library(ggplot2)
 
 main <- function() {
   # Download the data from Google Drive
@@ -40,7 +41,43 @@ main <- function() {
 
   output_intermediate <- transform_match_innings(match_innings)
 
-  write_intermediate_output(output_intermediate)
+  output_intermediate |>
+    distinct(remaining_wickets) |>
+    print()
+
+  output_intermediate |>
+    filter(remaining_wickets <= 0) |>
+    arrange(matchid, innings, over, delivery) |>
+    glimpse()
+
+  output_intermediate |>
+    count(wicket.kind) |>
+    print()
+
+  output_intermediate |>
+    count(matchid, innings) |>
+    print()
+
+  output_intermediate |>
+    group_by(matchid, innings, over, delivery) |>
+    summarize(n = n(), .groups = "drop") |>
+    filter(n > 1) |>
+    print()
+
+  output_intermediate |>
+    select(over) |>
+    distinct() |>
+    print(n = 50)
+
+  output_intermediate |>
+    filter(matchid == "1000887", innings == 1, over == 42, delivery == 6) |>
+    glimpse()
+
+  # write_intermediate_output(output_intermediate)
+
+  plot_overall_avg(output_intermediate)
+
+  # plot_team_avg(output_intermediate)
 }
 
 download_gdrive <- function(file_id, file_name) {
@@ -85,9 +122,7 @@ get_complete_mens <- function(parquet_path) {
       )
     ) |>
     filter(!no_result, gender == "male") |>
-    distinct(matchid, .keep_all = TRUE)
-
-  men_valid_results |>
+    distinct(matchid, .keep_all = TRUE) |>
     glimpse()
 }
 
@@ -113,25 +148,64 @@ get_innings <- function(parquet_path, match_df) {
 join_match_innings <- function(df_match, df_innings) {
   full_df <- df_match |>
     left_join(df_innings, by = "matchid") |>
-    select(matchid, team, innings, over, overs, runs.total, wicket.kind)
+    select(
+      matchid,
+      city,
+      venue,
+      neutral_venue,
+      dates,
+      team,
+      innings,
+      over,
+      overs,
+      runs.total,
+      wicket.kind
+    )
 }
 
 transform_match_innings <- function(df_full) {
   df_full |>
     separate(over, into = c("over", "delivery"), sep = "\\.", convert = TRUE) |>
     mutate(
-      remaining_overs = overs - over,
-      remaining_wickets = 10 - cumsum(!is.na(wicket.kind))
+      remaining_overs = overs - over
     ) |>
+    distinct(matchid, innings, over, delivery, .keep_all = TRUE) |>
+    arrange(matchid, innings, over, delivery) |>
+    group_by(matchid, team, innings) |>
+    mutate(remaining_wickets = 10 - cumsum(!is.na(wicket.kind))) |>
+    ungroup() |>
     glimpse()
 }
 
+# Would be good to write a test that confirms remaining wickets are between
+# 0 and 10 while all overs are between 0-50 (Deliveries can be >6 because
+# of penalties I think)
+
 write_intermediate_output <- function(intermediate_df) {
-  # Writing the df to JSON
   write_json(intermediate_df, "intermediate_output.json", pretty = TRUE)
 
-  # Also parquet file for vroom vroom
   df_to_parquet(data = intermediate_df, "intermediate_output.parquet")
+}
+
+plot_overall_avg <- function(df) {
+  df |>
+    group_by(matchid, over, team) |>
+    summarize(total_runs = sum(runs.total, na.rm = TRUE), .groups = "drop") |>
+    group_by(over) |>
+    summarize(avg_runs_over = mean(total_runs, na.rm = TRUE)) |>
+    ggplot(aes(x = over, y = avg_runs_over)) +
+    geom_col(alpha = 0.7) +
+    theme_minimal() +
+    labs(x = "Over", y = "Average Runs", title = "Average Runs Scored Per Over")
+}
+
+plot_team_avg <- function(df) {
+  df |>
+    group_by(over, team) |>
+    summarize(avg_runs = mean(runs.total, na.rm = TRUE)) |>
+    ggplot(aes(team, avg_runs, color = team)) +
+    geom_col(alpha = 0.7) +
+    theme_minimal()
 }
 
 main()
