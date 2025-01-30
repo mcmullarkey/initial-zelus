@@ -2,6 +2,8 @@
 
 ## Question #1
 
+NEED TO ADD DIAGRAM
+
 ### My proposed architecture
 
 Since the predictions need to be delivered overnight, not in real time, we're 
@@ -68,4 +70,8 @@ From 1 to 5 I'm a 1 on cricket knowledge. My only knowledge comes from the
 [Wikipedia page](https://en.wikipedia.org/wiki/One_Day_International) in the problem statement, 
 [this Youtube explainer](https://www.youtube.com/watch?v=EWpbtLIxYBk) I remembered going around a while back, 
 and posts on Bluesky when the USA upset Pakistan last year.
+
+## Question 3a
+
+
 
