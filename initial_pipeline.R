@@ -20,9 +20,26 @@ main <- function() {
 
   # Filter to only men's matches and matches that had a result
 
-  get_complete_mens()
+  complete_mens <- get_complete_mens("match_results.parquet")
+
+  # Run ad-hoc validation test
+
+  run_mens_validation(complete_mens)
 
   # Output team, inning order, remaining overs, and remaining wickets to JSON
+
+  innings_complete_mens <- get_innings("innings_results.parquet", complete_mens)
+
+  output_intermediate <- join_match_innings(
+    complete_mens,
+    innings_complete_mens
+  )
+
+  skim(output_intermediate)
+
+  output_intermediate |>
+    distinct(over) |>
+    glimpse()
 }
 
 download_gdrive <- function(file_id, file_name) {
@@ -57,10 +74,8 @@ convert_matches_innings <- function() {
     walk(convert_json_parquet)
 }
 
-get_complete_mens <- function() {
-  files <- c("match_results.json", "innings_results.json")
-
-  men_valid_results <- df_from_parquet("match_results.parquet") |>
+get_complete_mens <- function(parquet_path) {
+  men_valid_results <- df_from_parquet(parquet_path) |>
     mutate(across(where(is.factor), as.character)) |>
     mutate(
       no_result = case_when(
@@ -73,35 +88,32 @@ get_complete_mens <- function() {
 
   men_valid_results |>
     glimpse()
+}
 
+run_mens_validation <- function(complete_mens_df) {
   # Can do a test here to make sure gender is all male
   # Another test to make sure if outcome.winner is NA, result == tie
 
   # Ad hoc test here. If outcome.winner is NA, all result should be tie
   # Also the last row of total should equal the number of rows
 
-  men_valid_results |>
+  complete_mens_df |>
     count(outcome.winner, outcome.result, result) |>
     mutate(total = cumsum(n)) |>
     print()
+}
 
-  # Load ball by ball data
-
+get_innings <- function(parquet_path, match_df) {
   ball_by_ball <- df_from_parquet("innings_results.parquet") |>
-    filter(matchid %in% men_valid_results$matchid)
-
-  full_df <- men_valid_results |>
-    left_join(ball_by_ball, by = "matchid") |>
-    select(team, innings, over, runs.total, wicket.kind) |>
+    filter(matchid %in% match_df$matchid) |>
     glimpse()
+}
 
-  skim(full_df)
-
-  # Also need to double-check for "no result" matches in ball-by-ball data
-  # Need to look for non-completed innings, but only when the team batting
-  # second doesn't complete by scoring more than the team how batted first
-  # Even more so now that even after filtering out "no result" outcome.winner
-  # still has
+join_match_innings <- function(df_match, df_innings) {
+  full_df <- df_match |>
+    left_join(df_innings, by = "matchid") |>
+    select(matchid, team, innings, over, runs.total, wicket.kind) |>
+    glimpse()
 }
 
 main()
