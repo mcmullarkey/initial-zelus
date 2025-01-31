@@ -7,73 +7,54 @@ library(here)
 library(dplyr)
 library(duckplyr)
 library(stringr)
-library(skimr)
 library(tidyr)
 library(ggplot2)
 library(tidymodels)
 library(glmnet)
 library(vetiver)
 library(pins)
+library(readr)
+library(butcher)
 
 main <- function() {
-  # Download the data from Google Drive
-
-  # download_odi_data()
-
-  # Convert to parquet for vroom vroom
-
-  # convert_matches_innings()
-
-  # Filter to only men's matches and matches that had a result
-
-  # complete_mens <- get_complete_mens("match_results.parquet")
-  #
-  # # Run ad-hoc validation test
-  #
-  # run_mens_validation(complete_mens)
-  #
-  # # Output team, inning order, remaining overs, and remaining wickets to JSON
-  #
-  # innings_complete_mens <- get_innings("innings_results.parquet", complete_mens)
-  #
-  # match_innings <- join_match_innings(
-  #   complete_mens,
-  #   innings_complete_mens
-  # )
-  #
-  # # skim(match_innings)
-  #
-  # output_intermediate <- transform_match_innings(match_innings)
-  #
-  # run_deliveries_validation(output_intermediate)
-  #
-  # write_intermediate_output(output_intermediate)
-  #
-  # plot_overall_avg(output_intermediate)
-
-  df_intermediate <- df_from_parquet("intermediate_output.parquet")
-
-  df_modeling <- transform_for_modeling(df_intermediate)
+  download_odi_data()
+  convert_matches_innings()
+  complete_mens <- get_complete_mens(here("data/raw/match_results.parquet"))
+  run_mens_validation(complete_mens)
+  innings_complete_mens <- get_innings(
+    here("data/raw/innings_results.parquet"),
+    complete_mens
+  )
+  match_innings <- join_match_innings(complete_mens, innings_complete_mens)
+  output_intermediate <- transform_match_innings(match_innings)
+  run_deliveries_validation(output_intermediate)
+  write_intermediate_output(output_intermediate)
+  plot_overall_avg(output_intermediate)
+  df_intermediate <- df_from_parquet(
+    here("data/processed/intermediate_output.parquet")
+  )
+  model_artifacts <- run_modeling(df_intermediate)
+  save_model(
+    model_artifacts[["train_test_list"]],
+    model_artifacts[["workflow"]],
+    model_artifacts[["resamples"]]
+  )
 }
 
 download_gdrive <- function(file_id, file_name) {
   drive_deauth()
-
   drive_download(
     as_id(file_id),
-    path = glue("{file_name}.json"),
+    path = here("data/raw", glue("{file_name}.json")),
     overwrite = TRUE
   )
 }
 
 download_odi_data <- function() {
-  ## Assumes these google drive files still do not require auth
-
-  file_ids = list(
+  file_ids <- list(
     match_results = "19hVoi9f7n7etcmSXx7WHeiDp9pOLpQvN",
     innings_results = "1wQO9zr1VH8bY2W4Ca6cMxPdAoPOHo6X6"
   )
-
   walk2(file_ids, names(file_ids), download_gdrive)
 }
 
@@ -84,8 +65,20 @@ convert_json_parquet <- function(json_path) {
 }
 
 convert_matches_innings <- function() {
-  list.files(here(), pattern = "\\.json$", full.names = TRUE) |>
+  list.files(here("data/raw"), pattern = "\\.json$", full.names = TRUE) |>
     walk(convert_json_parquet)
+}
+
+write_intermediate_output <- function(intermediate_df) {
+  write_json(
+    intermediate_df,
+    here("data/processed/intermediate_output.json"),
+    pretty = TRUE
+  )
+  df_to_parquet(
+    intermediate_df,
+    here("data/processed/intermediate_output.parquet")
+  )
 }
 
 get_complete_mens <- function(parquet_path) {
@@ -116,7 +109,7 @@ run_mens_validation <- function(complete_mens_df) {
 }
 
 get_innings <- function(parquet_path, match_df) {
-  ball_by_ball <- df_from_parquet("innings_results.parquet") |>
+  ball_by_ball <- df_from_parquet(here("data/raw/innings_results.parquet")) |>
     filter(matchid %in% match_df$matchid) |>
     glimpse()
 }
@@ -157,12 +150,6 @@ transform_match_innings <- function(df_full) {
 # 0 and 10 while all overs are between 0-50 (Deliveries can be >6 because
 # of penalties I think)
 
-write_intermediate_output <- function(intermediate_df) {
-  write_json(intermediate_df, "intermediate_output.json", pretty = TRUE)
-
-  df_to_parquet(data = intermediate_df, "intermediate_output.parquet")
-}
-
 plot_overall_avg <- function(df) {
   df |>
     group_by(matchid, over, innings) |>
@@ -192,8 +179,8 @@ run_deliveries_validation <- function(df) {
     print()
 }
 
-transform_for_modeling <- function(df) {
-  df_initial <- df |>
+create_runs_df <- function(df) {
+  df |>
     group_by(matchid) |>
     mutate(
       batting_team = first(team),
@@ -211,56 +198,62 @@ transform_for_modeling <- function(df) {
       runs.total
     ) |>
     glimpse()
+}
 
-  runs_over_current <- df_initial |>
+create_current_runs <- function(df) {
+  df |>
     group_by(
       matchid,
       batting_team,
       bowling_team,
-      venue,
       dates,
       innings,
       over
     ) |>
     summarize(runs_in_over = sum(runs.total, na.rm = TRUE), .groups = "drop") |>
     glimpse()
+}
 
-  runs_over_hist <- df_initial |>
+create_hist_runs <- function(df) {
+  df |>
     group_by(matchid, over, innings) |>
     summarize(total_runs = sum(runs.total, na.rm = TRUE), .groups = "drop") |>
     group_by(over) |>
     summarize(avg_runs_over = mean(total_runs, na.rm = TRUE)) |>
     glimpse()
+}
 
+create_train_test <- function(df, hist_df) {
   set.seed(33)
-  split <- initial_split(runs_over_current, prop = 0.8, strata = runs_in_over)
+  split <- initial_split(df, prop = 0.8, strata = runs_in_over)
   train <- training(split)
   test <- testing(split)
 
   train_hist_avg <- train |>
-    left_join(runs_over_hist, by = "over") |>
+    left_join(hist_df, by = "over") |>
     glimpse()
 
   test_hist_avg <- test |>
-    left_join(runs_over_hist, by = "over") |>
+    left_join(hist_df, by = "over") |>
     glimpse()
 
-  basic_recipe <- recipe(runs_in_over ~ ., data = train_hist_avg) |>
+  return(list(train = train_hist_avg, test = test_hist_avg))
+}
+
+create_recipe <- function(df) {
+  recipe <- recipe(runs_in_over ~ ., data = df) |>
     update_role(matchid, , new_role = "ID") |>
     step_mutate(
       dates = as.Date(dates),
       across(where(is.character), as.factor)
     ) |>
     step_date(dates, features = c("year", "month", "doy", "dow")) |>
-    step_select(-dates) |>
+    step_rm(dates) |>
     step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
     step_normalize(all_numeric_predictors())
+}
 
-  basic_recipe |>
-    prep() |>
-    juice() |>
-    glimpse()
-
+create_model_spec <- function() {
   elnet_spec <-
     linear_reg(
       penalty = tune(),
@@ -268,43 +261,64 @@ transform_for_modeling <- function(df) {
     ) |>
       set_engine("glmnet", validation = 0.2) |>
       set_mode("regression")
+}
 
-  # Create workflow using the recipe
+run_modeling <- function(df) {
+  df_initial <- create_runs_df(df)
+
+  runs_over_current <- create_current_runs(df_initial)
+
+  runs_over_hist <- create_hist_runs(df_initial)
+
+  train_test_list = create_train_test(runs_over_current, runs_over_hist)
+
+  # There's probably a data validation test to run here
+
+  basic_recipe <- create_recipe(train_test_list[["train"]])
+
+  elnet_spec <- create_model_spec()
+
   elnet_wf <- workflow() |>
     add_recipe(basic_recipe) |>
     add_model(elnet_spec)
 
   doParallel::registerDoParallel()
+
   set.seed(33)
+  cv_folds <- vfold_cv(train_test_list[["train"]], v = 5, strata = runs_in_over)
 
-  # Perform cross-validation using vfold_cv
-  cv_folds <- vfold_cv(train_hist_avg, v = 5, strata = runs_in_over)
-
-  # cross validate
   elnet_rs <- tune_grid(elnet_wf, resamples = cv_folds, grid = 5)
 
   print(show_best(elnet_rs, metric = "rmse"))
 
-  # Merge train and test datasets
-  full_data <- bind_rows(train_hist_avg, test_hist_avg)
+  return(
+    list(
+      train_test_list = train_test_list,
+      workflow = elnet_wf,
+      resamples = elnet_rs
+    )
+  )
+}
 
-  # Finalize workflow with best hyperparameters
-  final_wf <- elnet_wf |>
-    finalize_workflow(select_best(elnet_rs, metric = "rmse"))
+save_model <- function(train_test_list, workflow, resamples) {
+  full_data <- bind_rows(train_test_list[["train"]], train_test_list[["test"]])
 
-  # Fit the finalized model on the full dataset
-  full_fit <- final_wf |> fit(full_data)
+  final_wf <- workflow |>
+    finalize_workflow(select_best(resamples, metric = "rmse"))
 
-  # Extract the trained model and create a vetiver model
-  v <- vetiver_model(full_fit, "runs-avg-elnet")
+  full_fit <- final_wf |>
+    fit(full_data)
 
-  # Create a board to store the model
+  v <- vetiver_model(full_fit, "runs-avg-elnet-vetiver")
+
   board <- board_folder("models")
 
-  # Store the trained model
   vetiver_pin_write(board, v)
-
-  # There's probably a data validation test to run here
+  
+  minimal_model <- full_fit |> 
+    butcher()
+  
+  saveRDS(minimal_model, "models/runs-avg-elnet-rds.rds")
 }
 
 main()

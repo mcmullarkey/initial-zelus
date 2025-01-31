@@ -1,0 +1,17 @@
+file: runs-avg-elnet.rds
+file_size: 168138
+pin_hash: ae526ea71f6a36b4
+type: rds
+title: 'runs-avg-elnet: a pinned list'
+description: A glmnet regression modeling workflow
+tags: ~
+urls: ~
+created: 20250131T000100Z
+api_version: 1
+user:
+  required_pkgs:
+  - glmnet
+  - parsnip
+  - recipes
+  - workflows
+  renv_lock: ~
