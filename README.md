@@ -2,7 +2,7 @@
 
 ## Question #1
 
-[Architecture Diagram]("images/architecture_diagram.png")
+![Architecture Diagram]("images/architecture_diagram.png")
 
 ### My proposed architecture
 
