@@ -73,5 +73,14 @@ and posts on Bluesky when the USA upset Pakistan last year.
 
 ## Question 3a
 
+You can find my approach to cleaning and curating this data in `R/train.R` script.
 
+Narrowing to men's matches was relatively straightforward. However, in order to filter out matches with no result you have
+to look across `outcome.result` and `result` columns. I see in [the documentation](https://cricsheet.org/format/json/#outcome) that only the `outcome.result` column is expected,
+so I appreciate the extra challenge here.
 
+Working at the match level first then lets us filter down the deliveries data to make that join faster. 
+We also had to filter out the variety of duplicate delivery data or else we'd end up with "remaining_wickets" values as low as -4.  
+
+I saved the intermediate data with the requested columns (along with a few features for the model) both in JSON format as requested
+and also parquet format to speed up the process.
