@@ -2,7 +2,7 @@
 
 ## Question #1
 
-NEED TO ADD DIAGRAM
+[Architecture Diagram](images/architecture_diagram)
 
 ### My proposed architecture
 
