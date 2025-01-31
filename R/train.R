@@ -333,7 +333,9 @@ save_model <- function(train_test_list, workflow, resamples) {
 
   minimal_model <- full_fit |>
     butcher()
-
+  
+  dir.create("models/", showWarnings = FALSE)
+  
   saveRDS(minimal_model, "models/runs-avg-elnet-rds.rds")
 }
 
