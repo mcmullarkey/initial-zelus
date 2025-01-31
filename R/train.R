@@ -11,28 +11,37 @@ library(tidyr)
 library(ggplot2)
 library(tidymodels)
 library(glmnet)
-library(vetiver)
-library(pins)
 library(readr)
 library(butcher)
 
 main <- function() {
   download_odi_data()
+
   convert_matches_innings()
+
   complete_mens <- get_complete_mens(here("data/raw/match_results.parquet"))
+
   run_mens_validation(complete_mens)
+
   innings_complete_mens <- get_innings(
     here("data/raw/innings_results.parquet"),
     complete_mens
   )
+
   match_innings <- join_match_innings(complete_mens, innings_complete_mens)
+
   output_intermediate <- transform_match_innings(match_innings)
+
   run_deliveries_validation(output_intermediate)
+
   write_intermediate_output(output_intermediate)
+
   plot_overall_avg(output_intermediate)
+
   df_intermediate <- df_from_parquet(
     here("data/processed/intermediate_output.parquet")
   )
+
   model_artifacts <- run_modeling(df_intermediate)
   save_model(
     model_artifacts[["train_test_list"]],
@@ -180,12 +189,25 @@ run_deliveries_validation <- function(df) {
 }
 
 create_runs_df <- function(df) {
+  if (!all(c("matchid", "team", "innings") %in% names(df))) {
+    stop("Data must contain 'matchid', 'team', and 'innings' columns")
+  }
+
+  # Get teams for each match
   df |>
     group_by(matchid) |>
     mutate(
-      batting_team = first(team),
-      bowling_team = last(team)
+      batting_team = team,
+      all_teams = toString(sort(unique(team))),
+      bowling_team = str_trim(
+        case_when(
+          team == str_extract(all_teams, "^[^,]+") ~
+            str_extract(all_teams, "[^,]+$"),
+          TRUE ~ str_extract(all_teams, "^[^,]+")
+        )
+      )
     ) |>
+    select(-all_teams) |>
     ungroup() |>
     select(
       matchid,
@@ -309,15 +331,9 @@ save_model <- function(train_test_list, workflow, resamples) {
   full_fit <- final_wf |>
     fit(full_data)
 
-  v <- vetiver_model(full_fit, "runs-avg-elnet-vetiver")
-
-  board <- board_folder("models")
-
-  vetiver_pin_write(board, v)
-  
-  minimal_model <- full_fit |> 
+  minimal_model <- full_fit |>
     butcher()
-  
+
   saveRDS(minimal_model, "models/runs-avg-elnet-rds.rds")
 }
 
