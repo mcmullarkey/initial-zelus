@@ -83,4 +83,82 @@ Working at the match level first then lets us filter down the deliveries data to
 We also had to filter out the variety of duplicate delivery data or else we'd end up with "remaining_wickets" values as low as -4.  
 
 I saved the intermediate data with the requested columns (along with a few features for the model) both in JSON format as requested
-and also parquet format to speed up the process.
+and also parquet format to speed up the process. These files are in `data/processed/` directory while the raw files are in `data/raw/`. 
+
+## Question 3b
+
+You can find my model training code in the `R/train.R` script.
+
+I used the `{tidymodels}` framework from R to be build reproducible pipelines, avoid data leakage, etc. I focused on getting a predictor 
+for deployment, not a cutting-edge model for predicting as instructed. 
+
+To that end, the only features I included were a historical average of runs scored in a given over 
+(calculated separately within train and test sets to avoid data leakage), which team is bowling, which team is batting, 
+which inning it is, which over it is, and dates features (since [this Wikipedia article](https://en.wikipedia.org/wiki/Run_rate) 
+mentioned changes in average run rate over time).
+
+If I were more focused on modeling, some low-hanging fruit I'd pursue would be:
+- Trying different transformations of the runs_in_over outcome data, since it has an interesting, non-normal distribution
+- Accounting for park effects (mentioned in the Youtube explainer from Question 2)
+- Determining the home team (making sure to account for when there's a neutral site)
+
+Some more in-depth approaches could be:
+- Accounting for individual batsman and individual bowler quality
+- Bringing in Elo-style team quality metrics
+
+## Question 4
+
+### Bottom line
+
+You can run the shell script for the earliest 5 overs Ireland batted during the provided data by: 
+
+Pulling the Docker container from Docker Hub
+
+```
+docker pull mcmullarkey/cricket-predictions
+```
+
+Running the Docker container in interactive mode
+
+```
+docker run -it mcmullarkey/cricket-predictions
+```
+
+And running
+
+```
+./scripts/predict.sh Ireland 5
+```
+
+You can get predictions for any number of the earliest overs a given team batted using the format:
+
+```
+./scripts/predict.sh <TEAM NAME> <NUMBER OF OVERS>
+```
+
+### Reasoning
+
+I took the question prompt as asking me to build a Docker container where the model could both be trained and provide inferences
+on the command line. It's possible making it so we can train the model is overkill, but I wanted to cover my bases!
+
+Given that, I used a two-stage Docker container where I started from the rocker/tidyverse base image, installed some necessary 
+Linux packages, and then install exact R package versions using an renv lockfile. I then copy over necessary R scripts and run
+the model training via `R/train.R`.
+
+To finish the first stage of the build, I create a more minimal version of the renv lockfile that only includes R packages used
+in inference. That way during the second stage the install will be faster and we end up with a smaller container size overall.
+
+This reduction is necessary, because in the second stage of the build I copy over the trained model and the data necessary to get inferences.
+I could of course reduce the container size by not including the data, but I decided to trade that off with having an all in one,
+packaged solution in the Docker container. The trade-offs were interesting, and in my mind the costliest error in this context
+was people not having what they needed to test my solution. In another set of circumstances I could imagine making the opposite
+choice.
+
+I also copy over a `R/predict.R` script plus the requested shell script `scripts/predict.sh` from the first stage of the build.
+
+The shell script includes some R transformations via Rscript on the command line to transform the data into the format the model
+is expecting. After `scripts/predict.sh` kicks off the process, `R/predict.R` feeds back the predicted runs for a given over 
+along with contextual data like dates, matchid, batting team, and the over.
+
+
+
