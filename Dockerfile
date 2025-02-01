@@ -24,6 +24,7 @@ RUN Rscript -e 'install.packages("renv")' \
 COPY R/ R/
 COPY data/ data/
 COPY scripts/ scripts/
+COPY tests/ tests/
 
 # Make scripts executable
 RUN chmod +x scripts/*
@@ -48,6 +49,7 @@ RUN Rscript -e 'install.packages("renv")' \
 # Copy only necessary files from builder stage
 COPY --from=builder /app/models /app/models
 COPY --from=builder /app/data/processed /app/data/processed
+COPY --from=builder /app/logs /app/logs
 COPY R/predict.R /app/R/
 COPY scripts/predict.sh /app/scripts/
 
