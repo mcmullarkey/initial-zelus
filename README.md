@@ -95,16 +95,27 @@ for deployment, not a cutting-edge model for predicting as instructed.
 To that end, the only features I included were a historical average of runs scored in a given over 
 (calculated separately within train and test sets to avoid data leakage), which team is bowling, which team is batting, 
 which inning it is, which over it is, and dates features (since [this Wikipedia article](https://en.wikipedia.org/wiki/Run_rate) 
-mentioned changes in average run rate over time).
+mentioned changes in average run rate over time). 
+
+I also chose an elastic net model since I like starting with linear models and its
+lasso + ridge penalties are helpful when certain features might be completely irrelevant. I did consider XGBoost and LightGBM given
+how well boosted trees perform on tabular data, but had issues installing them using `{renv}`. In this case the trade-off between
+having a reproducible deployment environment and potentially having a higher performing model was straightforward. Therefore,
+I stuck with elastic net.
 
 If I were more focused on modeling, some low-hanging fruit I'd pursue would be:
 - Trying different transformations of the runs_in_over outcome data, since it has an interesting, non-normal distribution
 - Accounting for park effects (mentioned in the Youtube explainer from Question 2)
 - Determining the home team (making sure to account for when there's a neutral site)
+- Doing more extensive hyperparameter tuning
+- Solving the `{renv}` install issue and running experiments using different models + their ensembles
 
 Some more in-depth approaches could be:
 - Accounting for individual batsman and individual bowler quality
 - Bringing in Elo-style team quality metrics
+
+I also used the `{butcher}` package to reduce the size of the model artifact to speed up inference, and saved the model in .rds format
+for more local-style use (vs. saving as vetiver if we were doing an API-style deployment).
 
 ## Question 4
 
@@ -124,10 +135,10 @@ Running the Docker container in interactive mode
 docker run -it mcmullarkey/cricket-predictions
 ```
 
-And running
+And running the following command inside the Docker container
 
 ```
-./scripts/predict.sh Ireland 5
+./scripts/predict.sh -team Ireland -overs 5
 ```
 
 You can get predictions for any number of the earliest overs a given team batted using the format:
@@ -156,9 +167,26 @@ choice.
 
 I also copy over a `R/predict.R` script plus the requested shell script `scripts/predict.sh` from the first stage of the build.
 
-The shell script includes some R transformations via Rscript on the command line to transform the data into the format the model
-is expecting. After `scripts/predict.sh` kicks off the process, `R/predict.R` feeds back the predicted runs for a given over 
-along with contextual data like dates, matchid, batting team, and the over.
+After `scripts/predict.sh` kicks off the process, `R/predict.R` validates the arugments, runs the model inference, and 
+feeds back the predicted runs for a given over along with contextual data like dates, batting team, bowling team, and the over.
+
+## Question 5
+
+Before tackling the testing, there are several filters users can take advantage of with this tool.
+
+Users must specify a team and number of overs, which will default to showing the earliest overs where that team was batting in the 
+data.
+
+However, you can also specify whether you want the latest available overs in the data + whether the specified team should be bowling
+or batting.
+
+For example:
+
+```
+./scripts/predict.sh -team Bangladesh -overs 5 -order latest -role bowling
+```
+
+Given this expanded functionality, let's start by talking about the unit tests + error handling during predictions/inference.
 
 
 

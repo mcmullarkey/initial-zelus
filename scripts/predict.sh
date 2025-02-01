@@ -3,61 +3,60 @@
 # Ensure script stops on error
 set -e
 
-# Check for required arguments
-if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 <team> <overs>"
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -team|--team)
+      TEAM="$2"
+      shift 2
+      ;;
+    -overs|--overs)
+      OVERS="$2"
+      shift 2
+      ;;
+    -order|--order)
+      ORDER="$2"
+      shift 2
+      ;;
+    -role|--role)
+      ROLE="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown argument: $1"
+      exit 1
+      ;;
+  esac
+done
+
+# Check for required arguments and set defaults
+if [ -z "$TEAM" ] || [ -z "$OVERS" ]; then
+  echo "Usage: $0 -team <team> -overs <overs> [-order <earliest|latest>] [-role <batting|bowling>]"
+  echo "Example: $0 -team 'Ireland' -overs 5 -order latest -role bowling"
+  echo "Defaults: -order earliest -role batting"
   exit 1
 fi
 
-TEAM="$1"
-OVERS="$2"
+# Set defaults if not specified
+ORDER="${ORDER:-earliest}"
+ROLE="${ROLE:-batting}"
 
-# Define paths
+# Validate order argument
+if [ "$ORDER" != "earliest" ] && [ "$ORDER" != "latest" ]; then
+  echo "Error: order must be either 'earliest' or 'latest'"
+  exit 1
+fi
+
+# Validate role argument
+if [ "$ROLE" != "batting" ] && [ "$ROLE" != "bowling" ]; then
+  echo "Error: role must be either 'batting' or 'bowling'"
+  exit 1
+fi
+
+# Define input file
 INPUT_FILE="data/processed/intermediate_output.parquet"
-FILTERED_FILE="data/processed/${TEAM}_first${OVERS}.parquet"
-
-# Filter for the given team's first N overs using R
-Rscript -e "
-suppressMessages(library(arrow));
-suppressMessages(library(dplyr));
-suppressMessages(library(duckplyr));
-suppressMessages(library(stringr));
-df <- df_from_parquet('$INPUT_FILE') |>
-  mutate(dates_dt = as.Date(dates)) |> 
-  arrange(dates_dt) |>
-  group_by(matchid) |>
-  group_by(matchid) |>
-  mutate(
-    batting_team = team,
-    all_teams = toString(sort(unique(team))),
-    bowling_team = str_trim(
-      case_when(
-        team == str_extract(all_teams, '^[^,]+') ~
-          str_extract(all_teams, '[^,]+$'),
-        TRUE ~ str_extract(all_teams, '^[^,]+')
-      )
-    )
-  ) |>
-  select(-all_teams) |>
-  ungroup() |>
-  select(
-  matchid,
-  batting_team,
-  bowling_team,
-  dates,
-  dates_dt,
-  innings,
-  over
-  ) |>
-  filter(batting_team == '$TEAM') |> 
-  distinct(over, .keep_all = TRUE) |> 
-  slice_min(dates_dt,n = 5) |> 
-  slice_head(n = 5) |> 
-  select(-dates_dt);
-write_parquet(df, '$FILTERED_FILE');
-"
 
 # Run predictions
-Rscript R/predict.R "$FILTERED_FILE"
+Rscript R/predict.R "$INPUT_FILE" "$TEAM" "$OVERS" "$ORDER" "$ROLE"
 
 
