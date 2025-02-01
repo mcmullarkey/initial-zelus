@@ -15,19 +15,21 @@ suppressPackageStartupMessages({
 main <- function() {
   args <- commandArgs(trailingOnly = TRUE)
   if (length(args) < 5) {
-    stop("Usage: Rscript R/predict.R <input_file> <team> <overs> <order> <role>")
+    stop(
+      "Usage: Rscript R/predict.R <input_file> <team> <overs> <order> <role>"
+    )
   }
-  
+
   input_file <- args[1]
   team <- args[2]
   overs <- as.numeric(args[3])
-  order <- args[4]  # "earliest" or "latest"
-  role <- args[5]   # "batting" or "bowling"
-  
+  order <- args[4] # "earliest" or "latest"
+  role <- args[5] # "batting" or "bowling"
+
   # Load and filter data
   raw_data <- load_data(input_file)
   filtered_data <- filter_team_data(raw_data, team, overs, order, role)
-  
+
   model <- load_model("models/runs-avg-elnet-rds.rds")
   historical_data <- create_hist_runs()
   df_for_preds <- create_preds_df(filtered_data, historical_data)
@@ -63,7 +65,7 @@ filter_team_data <- function(df, team, overs, order, role) {
       innings,
       over
     )
-  
+
   # Apply role-based filtering
   filtered_df <- base_df |>
     filter(
@@ -74,16 +76,17 @@ filter_team_data <- function(df, team, overs, order, role) {
       over <= overs
     ) |>
     distinct(over, .keep_all = TRUE)
-  
+
   # Apply order-based filtering
   if (order == "latest") {
     filtered_df <- filtered_df |>
       slice_max(dates_dt, n = overs)
-  } else {  # earliest
+  } else {
+    # earliest
     filtered_df <- filtered_df |>
       slice_min(dates_dt, n = overs)
   }
-  
+
   # Final selection and cleanup
   filtered_df |>
     slice_head(n = overs) |>
@@ -124,10 +127,10 @@ create_preds_df <- function(df, hist_df) {
 
 make_predictions <- function(workflow, new_data) {
   predictions <- predict(workflow, new_data = new_data)
-  
+
   new_data <- new_data |>
     mutate(predicted_runs = predictions$.pred)
-  
+
   return(new_data)
 }
 
@@ -138,6 +141,6 @@ print_predictions <- function(predictions) {
 }
 
 # Only run main() if this script is being run directly (not sourced)
-if (sys.nframe() == 0) {
+if (sys.nframe() == 0L) {
   main()
 }

@@ -1,0 +1,175 @@
+INFO [2025-01-31 17:44:03] Starting training script
+INFO [2025-01-31 19:14:12] Starting training script
+INFO [2025-01-31 19:14:12] Started downloading data from Google Drive
+INFO [2025-01-31 19:14:17] Finished downloading data from Google Drive
+INFO [2025-01-31 19:14:17] Started converting data from JSON to parquet
+INFO [2025-01-31 19:14:44] Finished converting data from JSON to parquet
+INFO [2025-01-31 19:14:44] Started transforming match data for men's complete matches
+INFO [2025-01-31 19:14:44] Finished transforming match data for men's complete matches
+INFO [2025-01-31 19:14:44] Started transforming delivery data for men's complete matches
+INFO [2025-01-31 19:14:46] Finished transforming delivery data for men's complete matches
+INFO [2025-01-31 19:14:46] Started joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:14:48] Finished joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:14:48] Started transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:17:21] Starting training script
+INFO [2025-01-31 19:17:21] Started downloading data from Google Drive
+INFO [2025-01-31 19:17:26] Finished downloading data from Google Drive
+INFO [2025-01-31 19:17:26] Started converting data from JSON to parquet
+INFO [2025-01-31 19:17:53] Finished converting data from JSON to parquet
+INFO [2025-01-31 19:17:53] Started transforming match data for men's complete matches
+INFO [2025-01-31 19:17:54] Finished transforming match data for men's complete matches
+INFO [2025-01-31 19:17:54] Started transforming delivery data for men's complete matches
+INFO [2025-01-31 19:17:56] Finished transforming delivery data for men's complete matches
+INFO [2025-01-31 19:17:56] Started joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:17:57] Finished joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:17:57] Started transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:21:40] Starting training script
+INFO [2025-01-31 19:21:40] Started downloading data from Google Drive
+INFO [2025-01-31 19:21:43] Finished downloading data from Google Drive
+INFO [2025-01-31 19:21:43] Started converting data from JSON to parquet
+INFO [2025-01-31 19:22:09] Finished converting data from JSON to parquet
+INFO [2025-01-31 19:22:09] Started transforming match data for men's complete matches
+INFO [2025-01-31 19:22:10] Finished transforming match data for men's complete matches
+INFO [2025-01-31 19:22:10] Started transforming delivery data for men's complete matches
+INFO [2025-01-31 19:22:12] Finished transforming delivery data for men's complete matches
+INFO [2025-01-31 19:22:12] Started joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:22:14] Finished joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:22:14] Started transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:23:26] Starting training script
+INFO [2025-01-31 19:23:26] Started downloading data from Google Drive
+INFO [2025-01-31 19:23:28] Finished downloading data from Google Drive
+INFO [2025-01-31 19:23:28] Started converting data from JSON to parquet
+INFO [2025-01-31 19:23:54] Finished converting data from JSON to parquet
+INFO [2025-01-31 19:23:54] Started transforming match data for men's complete matches
+INFO [2025-01-31 19:23:55] Finished transforming match data for men's complete matches
+INFO [2025-01-31 19:23:55] Started transforming delivery data for men's complete matches
+INFO [2025-01-31 19:23:57] Finished transforming delivery data for men's complete matches
+INFO [2025-01-31 19:23:57] Started joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:23:58] Finished joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:23:58] Started transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:24:10] Finished transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:24:17] Started writing intermediate output
+INFO [2025-01-31 19:24:23] Finished writing intermediate output
+INFO [2025-01-31 19:24:23] Started training the model
+INFO [2025-01-31 19:24:42] Finished training the model
+INFO [2025-01-31 19:24:42] Started saving model artifacts
+INFO [2025-01-31 19:24:48] Finished saving model artifacts
+INFO [2025-01-31 19:31:05] Starting training script
+INFO [2025-01-31 19:31:05] Started downloading data from Google Drive
+INFO [2025-01-31 19:31:05] Started downloading data from Google Drive
+INFO [2025-01-31 19:31:05] Finished downloading data from Google Drive
+INFO [2025-01-31 19:31:05] Finished downloading data from Google Drive
+INFO [2025-01-31 19:31:05] Started converting data from JSON to parquet
+INFO [2025-01-31 19:31:31] Finished converting data from JSON to parquet
+INFO [2025-01-31 19:31:31] Started transforming match data for men's complete matches
+INFO [2025-01-31 19:31:31] Finished transforming match data for men's complete matches
+INFO [2025-01-31 19:31:31] Started transforming delivery data for men's complete matches
+INFO [2025-01-31 19:31:33] Finished transforming delivery data for men's complete matches
+INFO [2025-01-31 19:31:33] Started joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:31:35] Finished joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:31:35] Started transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:33:19] Starting training script
+INFO [2025-01-31 19:33:19] Started downloading data from Google Drive
+INFO [2025-01-31 19:33:19] Started downloading data from Google Drive
+ERROR [2025-01-31 19:33:19] Error downloading data: could not find function "download_odi_data"
+INFO [2025-01-31 19:46:01] Starting training script
+INFO [2025-01-31 19:46:01] Started downloading data from Google Drive
+INFO [2025-01-31 19:46:01] Started downloading data from Google Drive
+INFO [2025-01-31 19:46:03] Finished downloading data from Google Drive
+INFO [2025-01-31 19:46:03] Finished downloading data from Google Drive
+INFO [2025-01-31 19:46:03] Started converting data from JSON to parquet
+INFO [2025-01-31 19:46:29] Finished converting data from JSON to parquet
+INFO [2025-01-31 19:46:29] Started transforming match data for men's complete matches
+INFO [2025-01-31 19:46:30] Finished transforming match data for men's complete matches
+INFO [2025-01-31 19:46:30] Started transforming delivery data for men's complete matches
+INFO [2025-01-31 19:46:32] Finished transforming delivery data for men's complete matches
+INFO [2025-01-31 19:46:32] Started joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:46:33] Finished joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:46:33] Started transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:46:44] Finished transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:46:52] Started writing intermediate output
+INFO [2025-01-31 19:46:58] Finished writing intermediate output
+INFO [2025-01-31 19:46:58] Started training the model
+INFO [2025-01-31 19:47:17] Model CV performance saved to models/metrics/ directory
+INFO [2025-01-31 19:47:17] Finished training the model
+INFO [2025-01-31 19:47:17] Started saving model artifacts
+INFO [2025-01-31 19:47:22] Model saved to models/ directory
+INFO [2025-01-31 19:47:24] Tuning grid saved to models/metrics/ directory
+INFO [2025-01-31 19:47:24] Finished saving model artifacts
+INFO [2025-01-31 19:56:53] Starting training script
+INFO [2025-01-31 19:56:53] Started downloading data from Google Drive
+INFO [2025-01-31 19:56:53] Started downloading data from Google Drive
+INFO [2025-01-31 19:56:57] Finished downloading data from Google Drive
+INFO [2025-01-31 19:56:57] Finished downloading data from Google Drive
+INFO [2025-01-31 19:56:57] Started converting data from JSON to parquet
+INFO [2025-01-31 19:57:23] Finished converting data from JSON to parquet
+INFO [2025-01-31 19:57:23] Started transforming match data for men's complete matches
+INFO [2025-01-31 19:57:23] Finished transforming match data for men's complete matches
+INFO [2025-01-31 19:57:23] Started transforming delivery data for men's complete matches
+INFO [2025-01-31 19:57:25] Finished transforming delivery data for men's complete matches
+INFO [2025-01-31 19:57:25] Started joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:57:27] Finished joining match + delivery data for men's complete matches
+INFO [2025-01-31 19:57:27] Started transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:57:45] Finished transforming match + delivery data to intermediate output
+INFO [2025-01-31 19:57:52] Started writing intermediate output
+INFO [2025-01-31 19:57:58] Finished writing intermediate output
+INFO [2025-01-31 19:57:58] Started training the model
+INFO [2025-01-31 19:57:58] Creating initial runs dataframe
+INFO [2025-01-31 19:58:03] Creating current runs summary
+INFO [2025-01-31 19:58:04] Creating historical runs summary
+INFO [2025-01-31 19:58:04] Creating train-test split
+INFO [2025-01-31 19:58:04] Creating recipe
+INFO [2025-01-31 19:58:04] Creating model specification
+INFO [2025-01-31 19:58:04] Creating workflow
+INFO [2025-01-31 19:58:04] Setting up parallel processing
+INFO [2025-01-31 19:58:04] Creating cross-validation folds
+INFO [2025-01-31 19:58:04] Tuning model
+INFO [2025-01-31 19:58:19] Model CV performance saved to models/metrics/ directory
+INFO [2025-01-31 19:58:19] Finished training the model
+INFO [2025-01-31 19:58:19] Started saving model artifacts
+INFO [2025-01-31 19:58:24] Model saved to models/ directory
+INFO [2025-01-31 19:58:26] Tuning grid saved to models/metrics/ directory
+INFO [2025-01-31 19:58:26] Finished saving model artifacts
+INFO [2025-01-31 20:02:50] Starting training script
+INFO [2025-01-31 20:02:50] Started downloading data from Google Drive
+INFO [2025-01-31 20:02:50] Started downloading data from Google Drive
+INFO [2025-01-31 20:02:53] Finished downloading data from Google Drive
+INFO [2025-01-31 20:02:53] Finished downloading data from Google Drive
+INFO [2025-01-31 20:02:53] Started converting data from JSON to parquet
+INFO [2025-01-31 20:03:19] Finished converting data from JSON to parquet
+INFO [2025-01-31 20:03:19] Started transforming match data for men's complete matches
+INFO [2025-01-31 20:03:19] Finished transforming match data for men's complete matches
+INFO [2025-01-31 20:07:09] Starting training script
+INFO [2025-01-31 20:07:09] Started downloading data from Google Drive
+INFO [2025-01-31 20:07:09] Started downloading data from Google Drive
+INFO [2025-01-31 20:07:11] Finished downloading data from Google Drive
+INFO [2025-01-31 20:07:11] Finished downloading data from Google Drive
+INFO [2025-01-31 20:07:11] Started converting data from JSON to parquet
+INFO [2025-01-31 20:07:37] Finished converting data from JSON to parquet
+INFO [2025-01-31 20:07:37] Started transforming match data for men's complete matches
+INFO [2025-01-31 20:07:37] Finished transforming match data for men's complete matches
+INFO [2025-01-31 20:07:37] Started transforming delivery data for men's complete matches
+INFO [2025-01-31 20:07:39] Finished transforming delivery data for men's complete matches
+INFO [2025-01-31 20:07:39] Started joining match + delivery data for men's complete matches
+INFO [2025-01-31 20:07:41] Finished joining match + delivery data for men's complete matches
+INFO [2025-01-31 20:07:41] Started transforming match + delivery data to intermediate output
+INFO [2025-01-31 20:07:58] Finished transforming match + delivery data to intermediate output
+INFO [2025-01-31 20:07:58] Started writing intermediate output
+INFO [2025-01-31 20:08:04] Finished writing intermediate output
+INFO [2025-01-31 20:08:04] Started training the model
+INFO [2025-01-31 20:08:04] Creating initial runs dataframe
+INFO [2025-01-31 20:08:09] Creating current runs summary
+INFO [2025-01-31 20:08:10] Creating historical runs summary
+INFO [2025-01-31 20:08:10] Creating train-test split
+INFO [2025-01-31 20:08:10] Creating recipe
+INFO [2025-01-31 20:08:11] Creating model specification
+INFO [2025-01-31 20:08:11] Creating workflow
+INFO [2025-01-31 20:08:11] Setting up parallel processing
+INFO [2025-01-31 20:08:11] Creating cross-validation folds
+INFO [2025-01-31 20:08:11] Tuning model
+INFO [2025-01-31 20:08:25] Model CV performance saved to models/metrics/ directory
+INFO [2025-01-31 20:08:25] Finished training the model
+INFO [2025-01-31 20:08:25] Started saving model artifacts
+INFO [2025-01-31 20:08:30] Model saved to models/ directory
+INFO [2025-01-31 20:08:31] Tuning grid saved to models/metrics/ directory
+INFO [2025-01-31 20:08:31] Finished saving model artifacts
