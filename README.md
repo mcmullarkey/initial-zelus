@@ -15,7 +15,7 @@ The batch ML deployment will use the following steps:
 
 #### Step 1 
 Kick off the entire process in the early morning local time after all games should be complete using 
-EventBridge scheduler (CRON expression) with an AWS Batch target. (DOUBLE CHECK IF ALL HAPPEN IN SAME PLACE OR DIFFERENT TIME ZONES)
+EventBridge scheduler (CRON expression) with an AWS Batch target.
 The remaining steps are jobs inside of AWS Batch, which we will track with AWS Step Functions for lightweight orchestration.
 
 #### Step 1 Reasoning: 
@@ -34,7 +34,7 @@ other services, and changing cloud providers is already a large lift.
 
 #### Step 2
 A Dockerized R script on AWS Batch provisioned with 8 cores + large memory. 
-Reads the data from its source (let’s assume S3, and performs initial raw data 
+This script will read the data from its source (let’s assume S3), and performs initial raw data 
 validation using the pointblank package in R. We'll start with simple checks 
 such as no duplicate keys, no null keys, no excessive null values, no massive outliers, etc. 
 All validation results will be logged to Cloud Watch, and any failures will 
@@ -48,9 +48,9 @@ pointblank allows us to get clear pass/fail decisions on raw data quality that a
 Initiating a small number of retries allows us to have some fault tolerance while not infinitely 
 looping in case of consistent data validation failure. We also use AWS Batch along with the future and furrr packages in R 
 to make sure this process can happen in parallel for different games at the same time to reduce runtime. 
-However, if we the 8 core, large memory compute can't be used for the feature validation + engineering section of model training 
-we will have to use alternate resources that could bottleneck the process (e.g., Dockerized plumber API deployed on Fargate, 
-ideally multiple cores so we can scale up and down API instances with Valve) 
+However, if I can't assume the 8 core, large memory compute can be used for the feature validation + engineering section I would have
+to change the architecture. Some lower compute, alternate resources  could bottleneck the process but may still work
+(e.g., Dockerized plumber API deployed on Fargate, ideally multiple cores so we can scale up and down API instances with Valve) 
 Using AWS Batch also helps us reduce costs by giving us the ability to provision larger compute and memory resources on the spot 
 rather than leaving, for example, large EC2 instances running.
 
@@ -94,12 +94,12 @@ Pull the most recent model that’s inside fault tolerance from S3 using a Docke
 4 GB of memory from AWS Batch. Create labels for the feature sets game by game, and send those predictions back to the feature 
 store database with the necessary data to identify "point in time" prediction (likely via inequality or rolling joins). 
 In other words, we recognize that these labels now exist from the model trained today, but these labels weren't available 
-prior to the model retraining.These inequality or rolling joins will be validated with the pointblank package.
+prior to the model retraining. These inequality or rolling joins will be validated with the pointblank package.
 
 #### Step 5 Reasoning
 This process uses the resource constraints as provided and updates the feature store database. 
 We're using the most recent fault tolerant version of our model via vetiver, and we keep the feature store straight by using metadata 
-to make clear which "point in time" we're talking about, We also want to make sure we provision enough resources here, 
+to make clear which "point in time" we're talking about. We also want to make sure we provision enough resources here, 
 since while technically an AWS Lambda can have 1 core and 4GB of memory its timeout is 15 minutes max. 
 Since we have up to an hour of compute time we’ll want to make sure that’s part of how we provision as well.
 
@@ -165,7 +165,7 @@ You can run the shell script for the earliest 5 overs Ireland batted during the 
 Pulling the Docker container from Docker Hub
 
 ```
-docker pull mcmullarkey/cricket-predictions
+docker pull mcmullarkey/cricket-predictions:latest
 ```
 
 Running the Docker container in interactive mode
@@ -228,10 +228,10 @@ For example:
 Given this expanded functionality, let's start by talking about the unit tests + error handling during predictions/inference.
 
 The unit tests for `R/predict.R` live in `tests/testthat/test-predict.R`. We create minimal mock data and make sure we can handle
-more expected use cases (The latest 5 Irish overs when they were bowling) and more edge cases (more overs are requested than available in the data). 
+more expected use cases (the latest 5 Irish overs when they were bowling) and more edge cases (more overs are requested than available in the data). 
 
-I also give informative error messages from the shell script such as this one
-for if someone tried
+I also give informative error messages from the shell script.
+For example, if someone tried to run this code in the Docker container
 
 ```
 ./scripts/predict.sh -team Bangladesh -overs 5 -order recent -role bowling
